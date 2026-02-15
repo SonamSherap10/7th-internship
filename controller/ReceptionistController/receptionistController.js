@@ -2,6 +2,22 @@ const repairRequest = require("../../model/repairRequestModel");
 const users = require("../../model/userModel");
 const Payment = require("../../model/paymentModel");
 const Notification = require("../../model/notificationModel");
+const category = require("../../model/repairCategoryModel");
+
+exports.getCustomers = async (req, res) => {
+  const list = await users.find({ role: "user" }).select("-password");
+  return res.status(200).json(list);
+};
+
+exports.getTechnicians = async (req, res) => {
+  const list = await users.find({ role: "technician" }).select("-password");
+  return res.status(200).json(list);
+};
+
+exports.getCategories = async (req, res) => {
+  const list = await category.find();
+  return res.status(200).json(list);
+};
 
 // Create repair request on behalf of a customer, optionally assign a technician
 exports.createRequestForCustomer = async (req, res) => {

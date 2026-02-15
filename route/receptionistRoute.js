@@ -7,7 +7,14 @@ const {
   createRequestForCustomer,
   getCompletedRequestsAwaitingPayment,
   updatePaymentStatus,
+  getCustomers,
+  getTechnicians,
+  getCategories,
 } = require("../controller/ReceptionistController/receptionistController");
+
+router.get("/customers", isAuthenticated, allowTo("receptionist"), catchError(getCustomers));
+router.get("/technicians", isAuthenticated, allowTo("receptionist"), catchError(getTechnicians));
+router.get("/categories", isAuthenticated, allowTo("receptionist"), catchError(getCategories));
 
 // Receptionist creates request on behalf of a specific customer
 router.post(

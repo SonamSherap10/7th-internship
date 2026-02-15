@@ -4,13 +4,14 @@ const isAuthenticated = require("../middleware/authorization");
 const allowTo = require("../middleware/roleAuthorization");
 const { multer, storage } = require("../services/multerConfig");
 
-const { getAssignedRequests, resolveRequest, addNotes } = require("../controller/technicianController/technicianController");
+const { getAssignedRequests, getAssignedRequestById, resolveRequest, addNotes } = require("../controller/technicianController/technicianController");
 
 const upload = multer({
   storage: storage,
 });
 
 router.route("/getRequest").get(isAuthenticated, catchError(getAssignedRequests));
+router.get("/request/:id", isAuthenticated, allowTo("technician", "admin"), catchError(getAssignedRequestById));
 router.post(
   "/resolveRequest/:id",
   isAuthenticated,

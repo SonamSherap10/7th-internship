@@ -102,3 +102,13 @@ exports.assignTechnician = async (req, res) => {
 
     res.status(200).json({ message: "Technician assigned successfully" });
 }
+
+exports.deleteRepairRequest = async (req, res) => {
+    const { requestId } = req.params;
+    const existingRequest = await repairRequest.findById(requestId);
+    if (!existingRequest) {
+        return res.status(404).json({ message: "Repair request not found" });
+    }
+    await repairRequest.findByIdAndDelete(requestId);
+    res.status(200).json({ message: "Repair request deleted successfully" });
+}

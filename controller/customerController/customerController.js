@@ -1,5 +1,12 @@
 const repairRequest = require("../../model/repairRequestModel");
 const Notification = require("../../model/notificationModel");
+const category = require("../../model/repairCategoryModel");
+const notes = require("../../model/notesModel");
+
+exports.getPublicCategories = async (req, res) => {
+  const categories = await category.find();
+  return res.status(200).json(categories);
+};
 
 exports.addCustomerRequests = async (req, res) => {
     const customerId = req.params.id;
@@ -35,17 +42,30 @@ exports.getCustomerRequests = async (req, res) => {
 } 
 
 exports.getRequestsByCode = async (req,res)=>{
-  const serviceCode = req.body.serviceCode;
-  const request = await repairRequest.find({serviceCode});
-    if(!request){
+  const serviceCode = req.query.serviceCode || req.body?.serviceCode;
+  const request = await repairRequest.find({ serviceCode });
+  if (!request || request.length === 0) {
     return res.status(404).json({ message: "No requests found for this code" });
   }
   return res.status(200).json({
-    message:"Succesfully retreived request",
-    data :request
-  })
+    message: "Successfully retrieved request",
+    data: request,
+  });
+};
 
-}
+exports.getNotesByServiceCode = async (req, res) => {
+  const serviceCode = req.query.serviceCode || req.body?.serviceCode;
+  if (!serviceCode) {
+    return res.status(400).json({ message: "Service code is required" });
+  }
+  const requestList = await repairRequest.find({ serviceCode });
+  if (!requestList || requestList.length === 0) {
+    return res.status(404).json({ message: "No request found for this code" });
+  }
+  const requestId = requestList[0]._id;
+  const list = await notes.find({ requestId }).sort({ createdAt: 1 });
+  return res.status(200).json(list);
+};
 
 exports.cancelRequest = async (req, res) => {
   try {
@@ -64,7 +84,7 @@ exports.cancelRequest = async (req, res) => {
     request.status = "cancelled";
     await request.save();
 
-    // notify technician if assigned
+  
     if (request.technicianId) {
       await Notification.create({
         requestId: request._id,

@@ -27,10 +27,9 @@ exports.register = async (req, res) => {
   await user.create({
     name: name,
     email: email,
-    phone:phone,
+    phone: phone,
     password: bcrypt.hashSync(password, 10),
-    image: process.env.BACKEND_URL+image.filename,
-
+    image: image && process.env.BACKEND_URL ? process.env.BACKEND_URL + image.filename : undefined,
   }); 
   res.status(201).json({
     message: "User registered successfully",
@@ -154,5 +153,31 @@ exports.resetpassword = async (req, res) => {
   userfound[0].save();
   return res.status(200).json({
     message: "password changed succesfully",
+  });
+};
+
+exports.updateProfilePhoto = async (req, res) => {
+  const image = req.file;
+  const userId = req.user._id;
+  if (!image) {
+    return res.status(400).json({ message: "Image file is required" });
+  }
+  const imageUrl = process.env.BACKEND_URL ? process.env.BACKEND_URL + image.filename : image.path;
+  const updated = await user.findByIdAndUpdate(
+    userId,
+    { image: imageUrl },
+    { new: true }
+  );
+  const u = updated.toJSON ? updated.toJSON() : updated;
+  res.status(200).json({
+    message: "Profile photo updated",
+    user: {
+      id: u.id || u._id?.toString(),
+      name: u.name,
+      email: u.email,
+      phone: u.phone || "",
+      role: u.role,
+      image: u.image,
+    },
   });
 };
